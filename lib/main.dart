@@ -1,43 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:my_flutter_app/home.dart';
+import 'screens/emotitube_screen.dart';
 
 void main() {
-  runApp(
-    const MaterialApp(
-      home: Home()
-    ),
-  );
+  runApp(const EmotiTubeApp());
 }
-class Sandbox extends StatelessWidget {
-  const Sandbox({super.key});
+
+class EmotiTubeApp extends StatelessWidget {
+  const EmotiTubeApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Sandbox'),
-        backgroundColor: Colors.grey,
+    return MaterialApp(
+      title: 'EmotiTube',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        fontFamily: 'PingFang SC',
       ),
-      body: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            height: 100,
-            color: Colors.redAccent,
-            child: Text('one')
-          ),
-          Container(
-            height: 200,
-            color: const Color.fromARGB(255, 137, 118, 118),
-            child: Text('two')
-          ),
-          Container(
-            height: 300,
-            color: const Color.fromARGB(255, 199, 145, 145),
-            child: Text('three')
-          ),
-        ],
-      ),
+      home: const EmotiTubeScreen(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
+
