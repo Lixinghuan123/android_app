@@ -23,7 +23,7 @@ class NoteBubble extends StatelessWidget {
       },
       child: Container(
         constraints: const BoxConstraints(maxWidth: 200, minWidth: 120),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),

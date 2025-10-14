@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/emotion.dart';
 import '../screens/note_edit_screen.dart';
 import 'note_bubble.dart';
+import 'note_bubble_overlay.dart';
 
 class EmotionTube extends StatefulWidget {
   final Emotion emotion;
@@ -32,6 +33,7 @@ class _EmotionTubeState extends State<EmotionTube>
   // 气泡显示相关状态 - 支持多个气泡
   Map<String, OverlayEntry> _overlayEntries = {};
   Set<String> _showingBubbleForRecords = {};
+  Map<String, LayerLink> _layerLinks = {};
 
   @override
   void initState() {
@@ -54,6 +56,7 @@ class _EmotionTubeState extends State<EmotionTube>
   void dispose() {
     _dropController.dispose();
     _dismissBubble();
+    _layerLinks.clear();
     super.dispose();
   }
   
@@ -182,24 +185,27 @@ class _EmotionTubeState extends State<EmotionTube>
                               onLongPress: () => _onEmojiLongPress(record),
                               child: Stack(
                                 children: [
-                                  Container(
-                                    width: 36,
-                                    height: 36,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      shape: BoxShape.circle,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withOpacity(0.1),
-                                          blurRadius: 4,
-                                          offset: const Offset(0, 2),
+                                  CompositedTransformTarget(
+                                    link: _layerLinks.putIfAbsent(record.id, () => LayerLink()),
+                                    child: Container(
+                                      width: 36,
+                                      height: 36,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        shape: BoxShape.circle,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(0.1),
+                                            blurRadius: 4,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          record.emoji,
+                                          style: const TextStyle(fontSize: 20),
                                         ),
-                                      ],
-                                    ),
-                                    child: Center(
-                                      child: Text(
-                                        record.emoji,
-                                        style: const TextStyle(fontSize: 20),
                                       ),
                                     ),
                                   ),
@@ -293,25 +299,11 @@ class _EmotionTubeState extends State<EmotionTube>
   }
   
   void _showNoteBubble(EmotionRecord record) {
-    final RenderBox renderBox = context.findRenderObject() as RenderBox;
-    final Offset offset = renderBox.localToGlobal(Offset.zero);
-    
-    // 计算气泡位置
-    int recordIndex = widget.records.indexWhere((r) => r.id == record.id);
-    double verticalOffset = 0;
-    if (recordIndex != -1) {
-      // 根据球的位置计算偏移，每个球占40像素高度，加上padding
-      verticalOffset = (widget.records.length - recordIndex - 1) * 40.0;
-    }
-    
     _showingBubbleForRecords.add(record.id);
     
     final overlayEntry = OverlayEntry(
-      builder: (context) => BubbleOverlay(
-        position: Offset(
-          offset.dx, // 气泡会在 BubbleOverlay 中自动添加水平偏移
-          offset.dy + verticalOffset + 8, // 垂直位置对应球的位置
-        ),
+      builder: (context) => NoteBubbleOverlay(
+        layerLink: _layerLinks[record.id]!,
         onDismiss: () => _dismissBubble(record.id),
         child: NoteBubble(
           note: record.note!,
