@@ -29,9 +29,9 @@ class _EmotionTubeState extends State<EmotionTube>
   late Animation<double> _dropAnimation;
   bool _isDropping = false;
   
-  // 气泡显示相关状态
-  OverlayEntry? _overlayEntry;
-  String? _showingBubbleForRecord;
+  // 气泡显示相关状态 - 支持多个气泡
+  Map<String, OverlayEntry> _overlayEntries = {};
+  Set<String> _showingBubbleForRecords = {};
 
   @override
   void initState() {
@@ -57,10 +57,20 @@ class _EmotionTubeState extends State<EmotionTube>
     super.dispose();
   }
   
-  void _dismissBubble() {
-    _overlayEntry?.remove();
-    _overlayEntry = null;
-    _showingBubbleForRecord = null;
+  void _dismissBubble([String? recordId]) {
+    if (recordId != null) {
+      // 关闭特定气泡
+      _overlayEntries[recordId]?.remove();
+      _overlayEntries.remove(recordId);
+      _showingBubbleForRecords.remove(recordId);
+    } else {
+      // 关闭所有气泡
+      for (var entry in _overlayEntries.values) {
+        entry.remove();
+      }
+      _overlayEntries.clear();
+      _showingBubbleForRecords.clear();
+    }
   }
 
   void _addEmotion() async {
@@ -263,16 +273,13 @@ class _EmotionTubeState extends State<EmotionTube>
 
   void _onEmojiTap(EmotionRecord record) {
     if (record.note != null && record.note!.isNotEmpty) {
-      // 如果已经显示了这个记录的气泡，则关闭
-      if (_showingBubbleForRecord == record.id) {
-        _dismissBubble();
+      // 如果已经显示了这个记录的气泡，则直接进入编辑页面
+      if (_showingBubbleForRecords.contains(record.id)) {
+        _openNoteEditScreen(record);
         return;
       }
       
-      // 关闭之前的气泡
-      _dismissBubble();
-      
-      // 显示新的气泡
+      // 显示新的气泡（不关闭其他气泡）
       _showNoteBubble(record);
     } else {
       // 显示提示
@@ -289,24 +296,33 @@ class _EmotionTubeState extends State<EmotionTube>
     final RenderBox renderBox = context.findRenderObject() as RenderBox;
     final Offset offset = renderBox.localToGlobal(Offset.zero);
     
-    _showingBubbleForRecord = record.id;
+    // 计算气泡位置
+    int recordIndex = widget.records.indexWhere((r) => r.id == record.id);
+    double verticalOffset = 0;
+    if (recordIndex != -1) {
+      // 根据球的位置计算偏移，每个球占40像素高度，加上padding
+      verticalOffset = (widget.records.length - recordIndex - 1) * 40.0;
+    }
     
-    _overlayEntry = OverlayEntry(
+    _showingBubbleForRecords.add(record.id);
+    
+    final overlayEntry = OverlayEntry(
       builder: (context) => BubbleOverlay(
         position: Offset(
-          offset.dx + 100, // 气泡在emoji球右侧
-          offset.dy + 100, // 适当的垂直位置
+          offset.dx, // 气泡会在 BubbleOverlay 中自动添加水平偏移
+          offset.dy + verticalOffset + 8, // 垂直位置对应球的位置
         ),
-        onDismiss: _dismissBubble,
+        onDismiss: () => _dismissBubble(record.id),
         child: NoteBubble(
           note: record.note!,
           onTap: () => _openNoteEditScreen(record),
-          onDismiss: _dismissBubble,
+          onDismiss: () => _dismissBubble(record.id),
         ),
       ),
     );
     
-    Overlay.of(context).insert(_overlayEntry!);
+    _overlayEntries[record.id] = overlayEntry;
+    Overlay.of(context).insert(overlayEntry);
   }
 
   void _onEmojiDoubleTap(EmotionRecord record) {
@@ -314,7 +330,7 @@ class _EmotionTubeState extends State<EmotionTube>
   }
   
   void _openNoteEditScreen(EmotionRecord record) {
-    _dismissBubble(); // 关闭气泡
+    _dismissBubble(record.id); // 关闭对应的气泡
     
     Navigator.of(context).push(
       MaterialPageRoute(

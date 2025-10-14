@@ -42,6 +42,22 @@ class _NoteEditScreenState extends State<NoteEditScreen> {
     );
     
     widget.onSave(updatedRecord);
+    
+    // 显示保存成功提示
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle, color: Colors.white),
+            const SizedBox(width: 8),
+            const Text('备注已保存'),
+          ],
+        ),
+        backgroundColor: const Color(0xFF6B73FF),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+    
     Navigator.of(context).pop();
   }
 

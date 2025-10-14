@@ -14,52 +14,57 @@ class NoteBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 显示前20个字符
     String displayText = note.length > 20 ? '${note.substring(0, 20)}...' : note;
     
     return GestureDetector(
       onTap: () {
-        onDismiss(); // 先关闭气泡
-        onTap(); // 然后执行点击操作
+        onDismiss();
+        onTap();
       },
       child: Container(
-        constraints: const BoxConstraints(maxWidth: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        constraints: const BoxConstraints(maxWidth: 200, minWidth: 120),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
+              color: Colors.black.withOpacity(0.15),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
             ),
           ],
           border: Border.all(
-            color: const Color(0xFF6B73FF).withOpacity(0.3),
+            color: Colors.grey.shade200,
             width: 1,
           ),
         ),
-        child: Column(
+        child: Row(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              displayText,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.black87,
+            Expanded(
+              child: Text(
+                displayText,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Colors.black87,
+                  height: 1.3,
+                ),
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
               ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 4),
-            Text(
-              '点击编辑',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey.shade600,
-                fontStyle: FontStyle.italic,
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: onDismiss,
+              child: Container(
+                padding: const EdgeInsets.all(2),
+                child: Icon(
+                  Icons.close,
+                  size: 14,
+                  color: Colors.grey.shade500,
+                ),
               ),
             ),
           ],
@@ -84,20 +89,17 @@ class BubbleOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onDismiss,
-      child: Container(
-        color: Colors.transparent,
-        child: Stack(
-          children: [
-            Positioned(
-              left: position.dx,
-              top: position.dy,
-              child: child,
-            ),
-          ],
+    return Stack(
+      children: [
+        Positioned(
+          left: position.dx + 45, // 气泡在emoji球右侧
+          top: position.dy - 5, // 稍微向上偏移
+          child: GestureDetector(
+            onTap: () {}, // 阻止事件冒泡
+            child: child,
+          ),
         ),
-      ),
+      ],
     );
   }
 }
