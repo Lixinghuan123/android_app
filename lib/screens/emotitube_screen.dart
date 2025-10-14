@@ -212,6 +212,21 @@ class _EmotiTubeScreenState extends State<EmotiTubeScreen> {
                               });
                               _saveTodayRecords(); // 保存数据
                             },
+                            onRecordUpdated: (updatedRecord) {
+                              setState(() {
+                                // 找到并更新对应的记录
+                                final records = todayRecords[emotion.name];
+                                if (records != null) {
+                                  final index = records.indexWhere(
+                                    (record) => record.id == updatedRecord.id,
+                                  );
+                                  if (index != -1) {
+                                    records[index] = updatedRecord;
+                                  }
+                                }
+                              });
+                              _saveTodayRecords(); // 保存数据
+                            },
                             ),
                           ),
                         );
