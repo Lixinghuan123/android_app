@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../constants/emotion_constants.dart';
 import '../models/emotion.dart';
 import '../widgets/emotion_tube.dart';
+import '../services/emotion_data_service.dart';
+import 'history_screen.dart';
 
 class EmotiTubeScreen extends StatefulWidget {
   const EmotiTubeScreen({super.key});
@@ -19,10 +21,24 @@ class _EmotiTubeScreenState extends State<EmotiTubeScreen> {
   @override
   void initState() {
     super.initState();
-    // 为每种情绪初始化空的记录列表
-    for (var emotion in EmotionConstants.defaultEmotions) {
-      todayRecords[emotion.name] = [];
-    }
+    _loadTodayRecords();
+  }
+
+  // 加载今日记录
+  Future<void> _loadTodayRecords() async {
+    final records = await EmotionDataService.getTodayRecords();
+    
+    setState(() {
+      // 为每种情绪初始化空的记录列表
+      for (var emotion in EmotionConstants.defaultEmotions) {
+        todayRecords[emotion.name] = records[emotion.name] ?? [];
+      }
+    });
+  }
+
+  // 保存数据到本地
+  Future<void> _saveTodayRecords() async {
+    await EmotionDataService.saveTodayRecords(todayRecords);
   }
 
   @override
@@ -128,9 +144,10 @@ class _EmotiTubeScreenState extends State<EmotiTubeScreen> {
           // 情绪搜集箱入口
           IconButton(
             onPressed: () {
-              // TODO: 导航到历史记录页面
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('历史记录功能即将开发')),
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const HistoryScreen(),
+                ),
               );
             },
             icon: const Icon(
@@ -181,18 +198,20 @@ class _EmotiTubeScreenState extends State<EmotiTubeScreen> {
                             child: EmotionTube(
                               emotion: emotion,
                               records: todayRecords[emotion.name] ?? [],
-                              onEmotionAdded: (record) {
-                                setState(() {
-                                  todayRecords[emotion.name]?.add(record);
-                                });
-                              },
-                              onRecordRemoved: (recordId) {
-                                setState(() {
-                                  todayRecords[emotion.name]?.removeWhere(
-                                    (record) => record.id == recordId,
-                                  );
-                                });
-                              },
+                            onEmotionAdded: (record) {
+                              setState(() {
+                                todayRecords[emotion.name]?.add(record);
+                              });
+                              _saveTodayRecords(); // 保存数据
+                            },
+                            onRecordRemoved: (recordId) {
+                              setState(() {
+                                todayRecords[emotion.name]?.removeWhere(
+                                  (record) => record.id == recordId,
+                                );
+                              });
+                              _saveTodayRecords(); // 保存数据
+                            },
                             ),
                           ),
                         );
@@ -239,7 +258,7 @@ class _EmotiTubeScreenState extends State<EmotiTubeScreen> {
                   
                   const SizedBox(height: 20),
                   
-                  // 底部信息展示区域（预留）
+                  // 底部信息展示区域 - 今日统计
                   Expanded(
                     child: Container(
                       width: double.infinity,
@@ -250,14 +269,23 @@ class _EmotiTubeScreenState extends State<EmotiTubeScreen> {
                           color: Colors.grey.shade200,
                         ),
                       ),
-                      child: Center(
-                        child: Text(
-                          '今日情绪统计\n（后续功能）',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.grey.shade500,
-                            fontSize: 14,
-                          ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          children: [
+                            Text(
+                              '今日情绪统计',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color: Colors.grey.shade700,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Expanded(
+                              child: _buildTodayStatistics(),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -268,6 +296,66 @@ class _EmotiTubeScreenState extends State<EmotiTubeScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  // 构建今日统计
+  Widget _buildTodayStatistics() {
+    final stats = EmotionDataService.getTodayStatistics(todayRecords);
+    
+    if (stats.isEmpty) {
+      return Center(
+        child: Text(
+          '今天还没有记录情绪\n点击上方emoji开始记录吧！',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Colors.grey.shade500,
+            fontSize: 14,
+          ),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      itemCount: stats.length,
+      itemBuilder: (context, index) {
+        final emotionName = stats.keys.elementAt(index);
+        final count = stats[emotionName]!;
+        final emotion = EmotionConstants.defaultEmotions
+            .firstWhere((e) => e.name == emotionName);
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4.0),
+          child: Row(
+            children: [
+              Text(
+                emotion.emoji,
+                style: const TextStyle(fontSize: 20),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                emotionName,
+                style: const TextStyle(fontSize: 14),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: emotion.color.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  '$count次',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
