@@ -155,9 +155,10 @@ class _EmotionTubeState extends State<EmotionTube>
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: SingleChildScrollView(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: widget.records.reversed.toList().asMap().entries.map((entry) {
+                      reverse: true,
+                      child: Column(                
+                        verticalDirection: VerticalDirection.up,// 从下往上排列
+                        children: widget.records.asMap().entries.map((entry) {
                           int index = entry.key;
                           EmotionRecord record = entry.value;
                           
