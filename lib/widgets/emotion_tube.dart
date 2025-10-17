@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../models/emotion.dart';
 import '../screens/note_edit_screen.dart';
 import 'note_bubble.dart';
@@ -31,9 +31,9 @@ class _EmotionTubeState extends State<EmotionTube>
   bool _isDropping = false;
   
   // 气泡显示相关状态 - 支持多个气泡
-  Map<String, OverlayEntry> _overlayEntries = {};
-  Set<String> _showingBubbleForRecords = {};
-  Map<String, LayerLink> _layerLinks = {};
+  final Map<String, OverlayEntry> _overlayEntries = {};
+  final Set<String> _showingBubbleForRecords = {};
+  final Map<String, LayerLink> _layerLinks = {};
 
   @override
   void initState() {

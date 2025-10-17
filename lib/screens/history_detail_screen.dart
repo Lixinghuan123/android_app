@@ -291,26 +291,44 @@ class _ReadOnlyEmotionTube extends StatelessWidget {
                     ),
                     child: GestureDetector(
                       onTap: () => _onEmojiTap(context, record),
-                      child: Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
+                      child: Stack(
+                        children: [
+                          Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                        child: Center(
-                          child: Text(
-                            record.emoji,
-                            style: const TextStyle(fontSize: 20),
+                            child: Center(
+                              child: Text(
+                                record.emoji,
+                                style: const TextStyle(fontSize: 20),
+                              ),
+                            ),
                           ),
-                        ),
+                          // 备注标记
+                          if (record.note != null && record.note!.isNotEmpty)
+                            Positioned(
+                              right: 2,
+                              top: 2,
+                              child: Container(
+                                width: 8,
+                                height: 8,
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFF6B73FF),
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                     ),
                   );
