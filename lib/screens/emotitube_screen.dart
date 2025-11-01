@@ -230,7 +230,7 @@ class _EmotiTubeScreenState extends State<EmotiTubeScreen> {
                             ),
                           ),
                         );
-                      }).toList(),
+                      }),
                       
                       // 自定义试管添加按钮 - 开发接口预留
                       if (pageEmotions.length < 3) // 只在最后一页且不满3个时显示

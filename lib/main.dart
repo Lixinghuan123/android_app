@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:my_flutter_app/home.dart';
 import 'screens/emotitube_screen.dart';
 
 void main() {
-  runApp(const EmotiTubeApp());
+  runApp(const NaoZhongApp());
 }
 
 class EmotiTubeApp extends StatelessWidget {
@@ -17,6 +18,21 @@ class EmotiTubeApp extends StatelessWidget {
         fontFamily: 'PingFang SC',
       ),
       home: const EmotiTubeScreen(),
+      debugShowCheckedModeBanner: false,
+    );
+  }
+}
+class NaoZhongApp extends StatelessWidget {
+  const NaoZhongApp({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'NaoZhongApp',
+      theme: ThemeData(
+        primarySwatch: Colors.lightGreen,
+        fontFamily: 'PingFang SC',
+      ),
+      home: const Home(),
       debugShowCheckedModeBanner: false,
     );
   }
